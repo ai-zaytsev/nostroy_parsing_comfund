@@ -37,7 +37,7 @@ async def fetch(session, url, json_data):
 
 async def get_compfund_fee_odo_sum_from_page(session, url, page_num):
     logger.debug(f"Fetching data for page {page_num}")
-    json_data = {"filters": {"member_status": 1}, "page": page_num, "pageCount": "100", "sortBy": {"compensation_fund_fee_odo": "DESC"}}
+    json_data = {"filters": {"member_status": 1}, "page": page_num, "pageCount": "100", "searchString": "", "sortBy": {"compensation_fund_fee_odo": "DESC"}}
     data_dict = await fetch(session, url, json_data)
     data = data_dict['data']['data']
     compensation_fund_fee_odo_per_page = sum(float(i.get('compensation_fund_fee_odo', 0)) for i in data)
@@ -47,7 +47,7 @@ async def get_compfund_fee_odo_sum_from_page(session, url, page_num):
 
 async def get_number_of_pages(session, url):
     logger.debug(f"Fetching number of pages for URL: {url}")
-    json_data = {"filters": {"member_status": 1}, "page": 1, "pageCount": "100", "sortBy": {"compensation_fund_fee_odo": "DESC"}}
+    json_data = {"filters": {"member_status": 1}, "page": 1, "pageCount": "100", "searchString": "", "sortBy": {"compensation_fund_fee_odo": "DESC"}}
     data_dict = await fetch(session, url, json_data)
     number_of_members = int(data_dict['data']['count'])
     number_of_pages = int(data_dict['data']['countPages'])
@@ -78,10 +78,10 @@ def write_to_file(filename, data):
 
 async def get_nostroy_dict_items(session):
     nostroy_sro_dict = {}
-    for i in range(371, 372):
+    for i in range(1, 600):
         sro_url = f"https://reestr.nostroy.ru/api/sro/{i}"
         try:
-            data_dict = await fetch(session, sro_url)
+            data_dict = await fetch(session, sro_url, None)
             short_description = data_dict['data']['short_description']
             registration_number = data_dict['data']['registration_number']
             dict_key = f"{registration_number} {short_description}"
@@ -96,7 +96,7 @@ async def get_nopriz_dict_items(session):
     for i in range(1, 600):
         sro_url = f"https://reestr.nopriz.ru/api/sro/{i}"
         try:
-            data_dict = await fetch(session, sro_url)
+            data_dict = await fetch(session, sro_url, None)
             short_description = data_dict['data']['short_description']
             registration_number = data_dict['data']['registration_number']
             dict_key = f"{registration_number} {short_description}"
@@ -124,7 +124,7 @@ async def main():
             logger.debug("Dictionary full")
             tasks = []
             for key, value in nostroy_dict_items:
-                url = f"https://reestr.nopriz.ru/api/sro/{value}/member/list"
+                url = f"https://reestr.nostroy.ru/api/sro/{value}/member/list"
                 task = asyncio.create_task(get_compfund_fee_odo_sum_per_sro(session, url))
                 tasks.append((key, task))
 
